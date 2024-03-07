@@ -20,6 +20,10 @@
   find which serial port they should use
  */
 
+#include "AP_SerialManager_config.h"
+
+#if AP_SERIALMANAGER_ENABLED
+
 #include <AP_HAL/AP_HAL.h>
 #include <AP_Math/AP_Math.h>
 #include <AP_RCProtocol/AP_RCProtocol.h>
@@ -27,37 +31,6 @@
 #include <AP_InertialSensor/AP_InertialSensor.h>
 #include "AP_SerialManager.h"
 #include <GCS_MAVLink/GCS.h>
-
-#ifndef HAL_HAVE_SERIAL0
-#define HAL_HAVE_SERIAL0 HAL_NUM_SERIAL_PORTS > 0
-#endif
-#ifndef HAL_HAVE_SERIAL1
-#define HAL_HAVE_SERIAL1 HAL_NUM_SERIAL_PORTS > 1
-#endif
-#ifndef HAL_HAVE_SERIAL2
-#define HAL_HAVE_SERIAL2 HAL_NUM_SERIAL_PORTS > 2
-#endif
-#ifndef HAL_HAVE_SERIAL3
-#define HAL_HAVE_SERIAL3 HAL_NUM_SERIAL_PORTS > 3
-#endif
-#ifndef HAL_HAVE_SERIAL4
-#define HAL_HAVE_SERIAL4 HAL_NUM_SERIAL_PORTS > 4
-#endif
-#ifndef HAL_HAVE_SERIAL5
-#define HAL_HAVE_SERIAL5 HAL_NUM_SERIAL_PORTS > 5
-#endif
-#ifndef HAL_HAVE_SERIAL6
-#define HAL_HAVE_SERIAL6 HAL_NUM_SERIAL_PORTS > 6
-#endif
-#ifndef HAL_HAVE_SERIAL7
-#define HAL_HAVE_SERIAL7 HAL_NUM_SERIAL_PORTS > 7
-#endif
-#ifndef HAL_HAVE_SERIAL8
-#define HAL_HAVE_SERIAL8 HAL_NUM_SERIAL_PORTS > 8
-#endif
-#ifndef HAL_HAVE_SERIAL9
-#define HAL_HAVE_SERIAL9 HAL_NUM_SERIAL_PORTS > 9
-#endif
 
 extern const AP_HAL::HAL& hal;
 
@@ -611,7 +584,14 @@ void AP_SerialManager::init()
                     uart->set_unbuffered_writes(true);
                     break;
 #endif
-
+#if AP_NETWORKING_BACKEND_PPP
+                case SerialProtocol_PPP:
+                    uart->begin(state[i].baudrate(),
+                                         AP_SERIALMANAGER_PPP_BUFSIZE_RX,
+                                         AP_SERIALMANAGER_PPP_BUFSIZE_TX);
+                    break;
+#endif
+                    
                 default:
                     uart->begin(state[i].baudrate());
             }
@@ -891,3 +871,5 @@ AP_SerialManager &serialmanager()
 }
 
 }
+
+#endif  // AP_SERIALMANAGER_ENABLED

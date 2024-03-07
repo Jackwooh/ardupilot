@@ -402,19 +402,18 @@ void lua_scripts::remove_script(lua_State *L, script_info *script) {
         }
     }
 
+    {
+        // Remove from running checksum
+        WITH_SEMAPHORE(crc_sem);
+        running_checksum ^= script->crc;
+    }
+    
     if (L != nullptr) {
         // state could be null if we are force killing all scripts
         luaL_unref(L, LUA_REGISTRYINDEX, script->lua_ref);
     }
     _heap.deallocate(script->name);
     _heap.deallocate(script);
-
-    {
-        // Remove from running checksum
-        WITH_SEMAPHORE(crc_sem);
-        running_checksum ^= script->crc;
-    }
-
 }
 
 void lua_scripts::reschedule_script(script_info *script) {
@@ -525,10 +524,12 @@ void lua_scripts::run(void) {
         load_all_scripts_in_dir(L, SCRIPTING_DIRECTORY);
         loaded = true;
     }
+#ifdef HAL_HAVE_AP_ROMFS_EMBEDDED_LUA
     if ((dir_disable & uint16_t(AP_Scripting::SCR_DIR::ROMFS)) == 0) {
         load_all_scripts_in_dir(L, "@ROMFS/scripts");
         loaded = true;
     }
+#endif
     if (!loaded) {
         GCS_SEND_TEXT(MAV_SEVERITY_CRITICAL, "Lua: All directory's disabled see SCR_DIR_DISABLE");
     }

@@ -22,6 +22,9 @@
 #pragma once
 
 #include "AP_SerialManager_config.h"
+
+#if AP_SERIALMANAGER_ENABLED
+
 #include <AP_Param/AP_Param.h>
 
 class AP_SerialManager {
@@ -81,6 +84,7 @@ public:
         SerialProtocol_DDS_XRCE = 45,
         SerialProtocol_IMUOUT = 46,
         // Reserving Serial Protocol 47 for SerialProtocol_IQ
+        SerialProtocol_PPP = 48,
         SerialProtocol_NumProtocols                    // must be the last value
     };
 
@@ -206,3 +210,5 @@ private:
 namespace AP {
     AP_SerialManager &serialmanager();
 };
+
+#endif  // AP_SERIALMANAGER_ENABLED
